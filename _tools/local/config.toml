@@ -1,0 +1,17 @@
+[server]
+  redirect_url = "http://localhost:8000"
+  port = ":8080"
+
+[dbm]
+  host     = "db"
+  port     = ":3306"
+  user     = "user"
+  password = "passw0rd"
+  dbname   = "sample"
+
+[dbs]
+  host     = "db"
+  port     = ":3306"
+  user     = "user"
+  password = "passw0rd"
+  dbname   = "sample"

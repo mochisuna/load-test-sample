@@ -1,0 +1,10 @@
+# Golang
+## development
+vendor/
+Gododir/godobin*
+
+## production
+bin/
+
+# node
+node_modules

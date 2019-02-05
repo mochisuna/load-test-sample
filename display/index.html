@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>負荷試験ナイト！</title>
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+  <link href="https://unpkg.com/nes.css/css/nes.css" rel="stylesheet" />
+
+  <style>
+    #japanese {
+      font-family: "dot";
+      src: url(/font.otf);
+    }
+    body {
+      margin: 50px;
+    }
+  </style>
+  <script type="text/javascript">
+    let arg = new Object;
+    let pair = location.search.substring(1).split('&');
+    for (let i = 0; pair[i]; i++) {
+      let kv = pair[i].split('=');
+      arg[kv[0]] = kv[1];
+    }
+    onload = function () {
+      document.getElementById('user-id').innerText = arg['user_id'];
+      if (arg['user_name'] != null) {
+        document.getElementById('user-name').innerText = decodeURI(arg['user_name']);
+      }
+      document.getElementById('secret-key').innerText = arg['secret_key'];
+    };
+  </script>
+</head>
+
+<body>
+  <header>
+    <h1 class="japanese">負荷試験ナイト!!!<i class="snes-jp-logo brand"></i></h1>
+    <p>giftee co.</p>
+  </header>
+
+  <section class="nes-container with-title">
+    <h1 class="title" class="japanese"><span id="user-name"></span></h1>
+    <div class="nes-table-responsive">
+      <table class="nes-table is-bordered is-dark">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Secret Key</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td> <span id="user-id"></span> </td>
+            <td> <span id="secret-key"></span> </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</body>
+
+</html>

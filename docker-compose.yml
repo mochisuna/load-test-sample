@@ -1,0 +1,35 @@
+version: '3'
+services:
+  app:
+    image: golang:1.10
+    volumes:
+    - .:/go/src/github.com/mochisuna/load-test-sample
+    working_dir: /go/src/github.com/mochisuna/load-test-sample
+    command: |
+      bash -c " \
+      echo "Server_Start" && \
+      go get -u gopkg.in/godo.v2/cmd/godo && \
+      godo server --watch"
+    ports:
+    - 8080:8080
+    depends_on:
+    - db
+
+  db:
+    image: mysql:5.7
+    environment:
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_DATABASE=sample
+    - MYSQL_USER=user
+    - MYSQL_PASSWORD=passw0rd
+    ports:
+    - 3306:3306
+
+  page:
+    image: python:3.7-alpine
+    volumes:
+    - ./display:/var/www/html
+    working_dir: /var/www/html
+    command: python -m http.server 8000
+    ports:
+    - 8000:8000
