@@ -42,7 +42,7 @@ func (s *Server) referUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	rendering.JSON(w, http.StatusCreated, &userResponse{
+	rendering.JSON(w, http.StatusOK, &userResponse{
 		RequestID: requestID,
 		ID:        user.ID,
 		Name:      user.Name,
