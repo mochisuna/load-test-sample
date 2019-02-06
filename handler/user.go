@@ -35,6 +35,7 @@ func (s *Server) referUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	user, err := s.UserService.Refer(domain.UserID(userID))
 	if err != nil {
+		log.Println("error reason: " + err.Error())
 		rendering.JSON(w, http.StatusInternalServerError, &responseError{
 			RequestID: requestID,
 			Reason:    "Failed UserService.Refer.",
@@ -58,6 +59,7 @@ func (s *Server) registerUser(w http.ResponseWriter, r *http.Request) {
 	requestID := middleware.GetReqID(ctx)
 	user := &domain.User{}
 	if err := s.UserService.Register(ctx, user); err != nil {
+		log.Println("error reason: " + err.Error())
 		rendering.JSON(w, http.StatusInternalServerError, &responseError{
 			RequestID: requestID,
 			Reason:    "Failed UserService.Register.",
@@ -83,7 +85,7 @@ func (s *Server) displayUser(w http.ResponseWriter, r *http.Request) {
 	// decode request body
 	var dr displayRequest
 	if err := json.NewDecoder(r.Body).Decode(&dr); err != nil {
-		log.Println(err)
+		log.Println("error reason: " + err.Error())
 		rendering.JSON(w, http.StatusBadRequest, &responseError{
 			RequestID: requestID,
 			Reason:    "Failed request body decode.",
@@ -94,6 +96,7 @@ func (s *Server) displayUser(w http.ResponseWriter, r *http.Request) {
 
 	// validation
 	if err := validate.Struct(dr); err != nil {
+		log.Println("error reason: " + err.Error())
 		rendering.JSON(w, http.StatusBadRequest, &responseError{
 			RequestID: requestID,
 			Reason:    "Failed request body validate.",
