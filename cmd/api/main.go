@@ -25,13 +25,13 @@ func main() {
 	}
 
 	// init db connection
-	// master
+	// master db
 	dbmClient, err := db.NewMySQL(&conf.DBMaster)
 	if err != nil {
 		panic(err)
 	}
 	defer dbmClient.Close()
-	// slave
+	// slave db
 	dbsClient, err := db.NewMySQL(&conf.DBSlave)
 	if err != nil {
 		panic(err)

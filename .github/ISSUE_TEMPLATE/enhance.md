@@ -1,5 +1,6 @@
 ---
 name: エンハンス
+labels: enhance
 about: 修正・機能拡張したい項目の追加
 
 ---

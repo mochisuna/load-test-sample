@@ -1,15 +1,15 @@
 version: '3'
 services:
   app:
-    image: golang:1.10
+    image: golang:1.12
     volumes:
-    - .:/go/src/github.com/mochisuna/load-test-sample
-    working_dir: /go/src/github.com/mochisuna/load-test-sample
+    - .:/go/load-test-sample
+    working_dir: /go/load-test-sample
     command: |
       bash -c " \
       echo "Server_Start" && \
-      go get -u gopkg.in/godo.v2/cmd/godo && \
-      godo server --watch"
+      go get -u github.com/oxequa/realize && \
+      realize start"
     ports:
     - 8080:8080
     depends_on:
