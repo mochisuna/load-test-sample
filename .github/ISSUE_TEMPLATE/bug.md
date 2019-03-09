@@ -1,5 +1,6 @@
 ---
 name: バグレポート
+labels: bug
 about: バグ発見時の報告用
 
 ---

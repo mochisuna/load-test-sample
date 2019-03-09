@@ -1,0 +1,29 @@
+settings:
+  legacy:
+    force: false
+    interval: 0s
+schema:
+  - name: load-test-sample
+    path: .
+    commands:
+      install:
+        status: true
+        dir: cmd/api
+      fmt:
+        status: true
+      build:
+        status: true
+        dir: cmd/api
+      run:
+        status: true
+        dir: cmd/api
+    watcher:
+      extensions:
+        - go
+        - toml
+      paths:
+        - /
+      ignored_paths:
+        - .git
+        - .realize
+        - vendor
