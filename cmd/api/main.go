@@ -48,7 +48,7 @@ func main() {
 		UserService: userService,
 	}
 
-	// Run App server
+	// Run Api server
 	server := handler.New(conf.Server.Port, services, conf.Server.RedirectURL)
 	log.Println("Start server")
 	if err := server.ListenAndServe(); err != nil {
