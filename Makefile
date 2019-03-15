@@ -42,7 +42,7 @@ dstatus:
 
 dlogin:
 	@echo "docker login"
-	@docker exec -it $(shell docker ps --all --format "{{.Names}}" | peco) /bin/bash
+	@docker exec -it $(shell docker ps --all --format "{{.Names}}" | peco) /bin/sh
 
 dclean:
 	@echo "docker clean"
