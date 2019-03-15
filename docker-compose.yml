@@ -3,7 +3,7 @@ services:
   api:
     image: golang:1.12-alpine 
     volumes:
-    - .:/go/load-test-sample
+      - .:/go/load-test-sample
     working_dir: /go/load-test-sample
     command: |
       sh -c " \
@@ -12,25 +12,25 @@ services:
         go get -u github.com/oxequa/realize && \
         realize start"
     ports:
-    - 8080:8080
+      - 8080:8080
     depends_on:
-    - db
+      - db
 
   db:
     image: mysql:5.7
     environment:
-    - MYSQL_ROOT_PASSWORD=root
-    - MYSQL_DATABASE=sample
-    - MYSQL_USER=user
-    - MYSQL_PASSWORD=passw0rd
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=sample
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=passw0rd
     ports:
-    - 3306:3306
+      - 3306:3306
 
   page:
     image: python:3.7-alpine
     volumes:
-    - ./display:/var/www/html
+      - ./display:/var/www/html
     working_dir: /var/www/html
     command: python -m http.server 8000
     ports:
-    - 8000:8000
+      - 8000:8000
