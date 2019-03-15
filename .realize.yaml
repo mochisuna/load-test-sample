@@ -6,17 +6,14 @@ schema:
   - name: load-test-sample
     path: .
     commands:
-      install:
-        status: true
-        dir: cmd/api
       fmt:
         status: true
-      build:
+      install:
         status: true
         dir: cmd/api
       run:
         status: true
-        dir: cmd/api
+        method: /go/bin/api
     watcher:
       extensions:
         - go
