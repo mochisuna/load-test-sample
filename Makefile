@@ -54,7 +54,7 @@ dlog:
 
 dmigrate: migrate
 	@echo "migrate"
-	@migrate -path ./_sql -database 'mysql://root:root@tcp(0.0.0.0:3306)/sample' -verbose up
+	@migrate -path ./_sql -database 'mysql://root:root@tcp(0.0.0.0:23306)/sample' -verbose up
 
 ## Install package
 .PHONY: golint migrate

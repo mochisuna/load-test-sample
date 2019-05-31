@@ -1,18 +1,15 @@
-version: '3'
+version: '3.5'
 services:
   api:
-    image: golang:1.12-alpine 
+    build:
+      context: .
+      target: build
+      dockerfile: Dockerfile
     volumes:
       - .:/go/load-test-sample
-    working_dir: /go/load-test-sample
-    command: |
-      sh -c " \
-        apk add --no-cache git && \
-        echo "Server_Start" && \
-        go get -u github.com/oxequa/realize && \
-        realize start"
+    command: realize start --run cmd/api --no-config
     ports:
-      - 8080:8080
+      - 28080:8080
     depends_on:
       - db
 
@@ -24,7 +21,7 @@ services:
       - MYSQL_USER=user
       - MYSQL_PASSWORD=passw0rd
     ports:
-      - 3306:3306
+      - 23306:3306
 
   page:
     image: python:3.7-alpine
@@ -33,4 +30,4 @@ services:
     working_dir: /var/www/html
     command: python -m http.server 8000
     ports:
-      - 8000:8000
+      - 28000:8000
