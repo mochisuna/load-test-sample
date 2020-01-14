@@ -32,7 +32,7 @@ require (
 	golang.org/x/net v0.0.0-20190301231341-16b79f2e4e95 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.27.0
+	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/urfave/cli.v2 v2.0.0-20180128182452-d3ae77c26ac8 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
