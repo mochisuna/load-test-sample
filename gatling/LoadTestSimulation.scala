@@ -9,50 +9,61 @@ import scala.util.Random
 import java.security.SecureRandom
 
 class LoadTestSimulation extends Simulation {
-  def displayParam(userID: String, name: String, secretKey: String): String = {
-    val orderID = new Random(new SecureRandom()).alphanumeric.take(10).mkString
-    val json =
-      s"""{
-        "user_id": "${userID}",
-        "name": "${name}",
-        "secret_key": "${secretKey}"
-      }"""
-    return json
-  }
-  val serverURI = "http://localhost:8080/v1"
+  val serverURI = "http://localhost:28080/v1"
   val serverHttpProtocol = http.baseUrl(serverURI)
-  val sc = scenario("Scenario")
-    .exec(
-      http("scenario_1_create_user")
-        .post(serverURI + "/users")
+
+  object User {
+    def create() = exec(
+      http("create_user")
+        .post(f"$serverURI/users")
         .check(
           status.is(201),
-          jsonPath("$.id").find.saveAs("user_id")
+          jsonPath("$.id").find.saveAs("user_id"),
+          jsonPath("$.name").find.saveAs("user_name")
         )
     ).exitHereIfFailed
-    .exec(
-      http("scenario_2_refer_user")
-        .get(session => serverURI+"/users/"+session("user_id").as[String])
+
+    def refer(userID: String, userName: String) = exec(
+      http("refer_user")
+        .get(f"$serverURI/users/$userID")
         .check(
           status.is(200),
-          jsonPath("$.id").find.saveAs("user_id"),
-          jsonPath("$.name").find.saveAs("name"),
+          jsonPath("$.id").find.is(userID),
+          jsonPath("$.name").find.is(userName),
           jsonPath("$.secret_key").find.saveAs("secret_key")
         ),
     ).exitHereIfFailed
-    .exec(
-      http("scenario_3_redirect_status")
-        .post(serverURI+"/display")
-        .body(StringBody(session => displayParam(session("user_id").as[String], session("name").as[String], session("secret_key").as[String]))).asJson
+  }
+  object Page{
+    private val param = (userID: String, name: String, secretKey: String) => {
+      StringBody(
+        s"""{
+          "user_id": "$userID",
+          "name": "$name",
+          "secret_key": "$secretKey"
+        }"""
+      )
+    }
+    def redirectStatus(userID: String, name: String, secretKey: String) = exec(
+      http("redirect_status")
+        .post(f"$serverURI/display")
+        .body(param(userID, name, secretKey)).asJson
         .disableFollowRedirect
         .check(status.is(301))
     ).exitHereIfFailed
-    .exec(
-      http("scenario_3_redirect_page")
-        .post(serverURI+"/display")
-        .body(StringBody(session => displayParam(session("user_id").as[String], session("name").as[String], session("secret_key").as[String]))).asJson
+
+    def display(userID: String, name: String, secretKey: String) = exec(
+      http("redirect_page")
+        .post(f"$serverURI/display")
+        .body(param(userID, name, secretKey)).asJson
         .check(status.is(200))
     ).exitHereIfFailed
+  }
+  val sc = scenario("Scenario")
+    .exec(User.create())
+    .exec(User.refer("${user_id}", "${user_name}"))
+    .exec(Page.redirectStatus("${user_id}", "${user_name}", "${secret_key}"))
+    .exec(Page.display("${user_id}", "${user_name}", "${secret_key}"))
 
   setUp(
     sc.inject(
