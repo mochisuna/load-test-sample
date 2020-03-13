@@ -2,15 +2,16 @@ package computerdatabase
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import scala.concurrent.duration._
+import io.gatling.core.structure.PopulationBuilder
 
+import scala.concurrent.duration._
 import scala.util.parsing.json._
 import scala.util.Random
+
 import java.security.SecureRandom
 
 class LoadTestSimulation extends Simulation {
-  val serverURI = "http://localhost:28080/v1"
-  val serverHttpProtocol = http.baseUrl(serverURI)
+  private val serverURI = "http://localhost:28080/v1"
 
   object User {
     def create() = exec(
@@ -34,7 +35,8 @@ class LoadTestSimulation extends Simulation {
         ),
     ).exitHereIfFailed
   }
-  object Page{
+
+  object Page {
     private val param = (userID: String, name: String, secretKey: String) => {
       StringBody(
         s"""{
@@ -44,6 +46,7 @@ class LoadTestSimulation extends Simulation {
         }"""
       )
     }
+
     def redirectStatus(userID: String, name: String, secretKey: String) = exec(
       http("redirect_status")
         .post(f"$serverURI/display")
@@ -59,16 +62,33 @@ class LoadTestSimulation extends Simulation {
         .check(status.is(200))
     ).exitHereIfFailed
   }
-  val sc = scenario("Scenario")
-    .exec(User.create())
-    .exec(User.refer("${user_id}", "${user_name}"))
-    .exec(Page.redirectStatus("${user_id}", "${user_name}", "${secret_key}"))
-    .exec(Page.display("${user_id}", "${user_name}", "${secret_key}"))
+
+  def execScenario(name: String) = {
+    scenario(name)
+      .exec(User.create())
+      .exec(User.refer("${user_id}", "${user_name}"))
+      .exec(Page.redirectStatus("${user_id}", "${user_name}", "${secret_key}"))
+      .exec(Page.display("${user_id}", "${user_name}", "${secret_key}"))
+  }
+
+  def getURI(): String = {
+    return serverURI
+  }
 
   setUp(
-    sc.inject(
+    execScenario("Load test sample simulation").inject(
       atOnceUsers(10),
-      rampUsers(20) during(5 seconds),
-    ).protocols(serverHttpProtocol),
+      rampUsers(20) during (5 seconds),
+    ).protocols(http.baseUrl(getURI())),
   )
+}
+
+
+class RampUp10Users extends LoadTestSimulation {
+  override def setUp(populationBuilders: PopulationBuilder*): SetUp =
+    super.setUp(
+      execScenario("Load test sample simulation: RampUp 10 user")
+        .inject(rampUsers(10) during (5 seconds))
+        .protocols(http.baseUrl(getURI()))
+    )
 }
