@@ -76,7 +76,7 @@ class LoadTestSimulation extends Simulation {
   }
 
   setUp(
-    execScenario("Load test sample simulation").inject(
+    execScenario("Load test base simulation").inject(
       atOnceUsers(1),
     ).protocols(http.baseUrl(getURI())),
   )
@@ -86,7 +86,7 @@ class LoadTestSimulation extends Simulation {
 class LoadTestSimulationRampUp10Users extends LoadTestSimulation {
   override def setUp(populationBuilders: PopulationBuilder*): SetUp =
     super.setUp(
-      execScenario("Load test sample simulation: RampUp 10 user")
+      execScenario("Load test simulation: rampUp 10 users")
         .inject(rampUsers(10) during (5 seconds))
         .protocols(http.baseUrl(getURI()))
     )
@@ -95,7 +95,7 @@ class LoadTestSimulationRampUp10Users extends LoadTestSimulation {
 class LoadTestSimulationCompoundTest extends LoadTestSimulation {
   override def setUp(populationBuilders: PopulationBuilder*): SetUp =
     super.setUp(
-      execScenario("Load test sample simulation: RampUp 10 user")
+      execScenario("Load test simulation: init 10 users, rampUp 10 users(5 sec), constant 30 users(5 sec)")
         .inject(
           atOnceUsers(10),
           rampUsers(10) during (5 seconds),
