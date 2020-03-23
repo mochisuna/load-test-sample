@@ -4,13 +4,13 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/Masterminds/squirrel v1.1.0
+	github.com/Masterminds/squirrel v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/eknkc/amber v0.0.0-20171010120322-cdade1c07385 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/go-chi/chi v4.0.3+incompatible
-	github.com/go-chi/cors v1.0.0
+	github.com/go-chi/cors v1.0.1
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/go-siris/siris v7.4.0+incompatible // indirect

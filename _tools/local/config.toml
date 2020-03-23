@@ -1,5 +1,5 @@
 [server]
-  redirect_url = "http://localhost:8000"
+  redirect_url = "http://localhost:28000"
   port = ":8080"
 
 [dbm]
