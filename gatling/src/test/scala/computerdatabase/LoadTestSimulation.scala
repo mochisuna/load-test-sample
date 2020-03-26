@@ -38,27 +38,26 @@ class LoadTestSimulation extends Simulation {
 
   object Page {
     private val param = (userID: String, name: String, secretKey: String) => {
-      StringBody(
-        s"""{
-          "user_id": "$userID",
-          "name": "$name",
-          "secret_key": "$secretKey"
-        }"""
-      )
+      s"""{
+        "user_id": "$userID",
+        "name": "$name",
+        "secret_key": "$secretKey"
+      }"""
     }
 
+    private def redirectRequest(requestTitle: String, param: String) = http(requestTitle)
+      .post(f"$serverURI/display")
+      .body(StringBody(param))
+      .asJson
+
     def redirectStatus(userID: String, name: String, secretKey: String) = exec(
-      http("redirect_status")
-        .post(f"$serverURI/display")
-        .body(param(userID, name, secretKey)).asJson
+      redirectRequest("redirect_status", param(userID, name, secretKey))
         .disableFollowRedirect
         .check(status.is(301))
     ).exitHereIfFailed
 
-    def display(userID: String, name: String, secretKey: String) = exec(
-      http("redirect_page")
-        .post(f"$serverURI/display")
-        .body(param(userID, name, secretKey)).asJson
+    def redirectPage(userID: String, name: String, secretKey: String) = exec(
+      redirectRequest("redirect_page", param(userID, name, secretKey))
         .check(status.is(200))
     ).exitHereIfFailed
   }
@@ -68,7 +67,7 @@ class LoadTestSimulation extends Simulation {
       .exec(User.create())
       .exec(User.refer("${user_id}", "${user_name}"))
       .exec(Page.redirectStatus("${user_id}", "${user_name}", "${secret_key}"))
-      .exec(Page.display("${user_id}", "${user_name}", "${secret_key}"))
+      .exec(Page.redirectPage("${user_id}", "${user_name}", "${secret_key}"))
   }
 
   def getURI(): String = {
