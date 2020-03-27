@@ -1,22 +1,24 @@
 package computerdatabase
 
 import io.gatling.core.Predef._
-import io.gatling.http.Predef._
 import io.gatling.core.structure.PopulationBuilder
+import io.gatling.http.Predef._
 
 import scala.concurrent.duration._
-import scala.util.parsing.json._
 import scala.util.Random
+
+import scalaj.http.Http
+import org.json4s.jackson.JsonMethods._
 
 import java.security.SecureRandom
 
 class LoadTestSimulation extends Simulation {
-  private val serverURI = "http://localhost:28080/v1"
+  val targetURI = sys.env("TARGET_URI")
 
   object User {
     def create() = exec(
       http("create_user")
-        .post(f"$serverURI/users")
+        .post(f"$targetURI/users")
         .check(
           status.is(201),
           jsonPath("$.id").find.saveAs("user_id"),
@@ -26,7 +28,7 @@ class LoadTestSimulation extends Simulation {
 
     def refer(userID: String, userName: String) = exec(
       http("refer_user")
-        .get(f"$serverURI/users/$userID")
+        .get(f"$targetURI/users/$userID")
         .check(
           status.is(200),
           jsonPath("$.id").find.is(userID),
@@ -46,7 +48,7 @@ class LoadTestSimulation extends Simulation {
     }
 
     private def redirectRequest(requestTitle: String, param: String) = http(requestTitle)
-      .post(f"$serverURI/display")
+      .post(f"$targetURI/display")
       .body(StringBody(param))
       .asJson
 
@@ -70,24 +72,19 @@ class LoadTestSimulation extends Simulation {
       .exec(Page.redirectPage("${user_id}", "${user_name}", "${secret_key}"))
   }
 
-  def getURI(): String = {
-    return serverURI
-  }
-
   setUp(
     execScenario("Load test base simulation").inject(
       atOnceUsers(1),
-    ).protocols(http.baseUrl(getURI())),
+    ).protocols(http.baseUrl(targetURI)),
   )
 }
-
 
 class LoadTestSimulationRampUp10Users extends LoadTestSimulation {
   override def setUp(populationBuilders: PopulationBuilder*): SetUp =
     super.setUp(
       execScenario("Load test simulation: rampUp 10 users")
         .inject(rampUsers(10) during (5 seconds))
-        .protocols(http.baseUrl(getURI()))
+        .protocols(http.baseUrl(targetURI))
     )
 }
 
@@ -100,6 +97,47 @@ class LoadTestSimulationCompoundTest extends LoadTestSimulation {
           rampUsers(10) during (5 seconds),
           rampUsers(30) during (5 seconds)
         )
-        .protocols(http.baseUrl(getURI()))
+        .protocols(http.baseUrl(targetURI))
     )
+}
+
+class LoadTestSimulationWithPreprocessingTest extends LoadTestSimulation {
+  before {
+    if (BeforeAction.createUser()) {
+      println("check: OK")
+    } else {
+      println("check: NG")
+    }
+  }
+
+  private object BeforeAction {
+    def createUser(): Boolean = {
+      val user = post(f"${targetURI}/users", "")
+      val values = get(f"${targetURI}/users/${user.get("id").get}")
+      println(s"user: ${user}")
+      println(s"values: ${values}")
+      return user.get("id").get == values.get("id").get &&
+        user.get("name").get == values.get("name").get &&
+        user.get("secret_key").get == values.get("secret_key").get
+    }
+
+    private def post(url: String, data: String): Map[String, Any] = {
+      val response = Http(url)
+        .postData(data)
+        .header("content-type", "application/json")
+        .asString
+      // json stringをパースしてmap変換するためimplicit valでformat定義
+      implicit val formats = org.json4s.DefaultFormats
+      return parse(response.body).extract[Map[String, Any]]
+    }
+
+    private def get(url: String): Map[String, Any] = {
+      val response = Http(url)
+        .header("content-type", "application/json")
+        .asString
+      implicit val formats = org.json4s.DefaultFormats
+      return parse(response.body).extract[Map[String, Any]]
+    }
+  }
+
 }
