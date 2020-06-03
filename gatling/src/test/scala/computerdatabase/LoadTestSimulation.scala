@@ -13,12 +13,16 @@ import org.json4s.jackson.JsonMethods._
 import java.security.SecureRandom
 
 class LoadTestSimulation extends Simulation {
-  val targetURI = sys.env("TARGET_URI")
+  private val targetURI = sys.env("TARGET_URI")
+
+  def getURI(): String = {
+    return targetURI
+  }
 
   object User {
     def create() = exec(
       http("create_user")
-        .post(f"$targetURI/users")
+        .post("/users")
         .check(
           status.is(201),
           jsonPath("$.id").find.saveAs("user_id"),
@@ -28,7 +32,7 @@ class LoadTestSimulation extends Simulation {
 
     def refer(userID: String, userName: String) = exec(
       http("refer_user")
-        .get(f"$targetURI/users/$userID")
+        .get(f"/users/$userID")
         .check(
           status.is(200),
           jsonPath("$.id").find.is(userID),
@@ -48,7 +52,7 @@ class LoadTestSimulation extends Simulation {
     }
 
     private def redirectRequest(requestTitle: String, param: String) = http(requestTitle)
-      .post(f"$targetURI/display")
+      .post("/display")
       .body(StringBody(param))
       .asJson
 
@@ -84,7 +88,7 @@ class LoadTestSimulationRampUp10Users extends LoadTestSimulation {
     super.setUp(
       execScenario("Load test simulation: rampUp 10 users")
         .inject(rampUsers(10) during (5 seconds))
-        .protocols(http.baseUrl(targetURI))
+        .protocols(http.baseUrl(getURI()))
     )
 }
 
@@ -97,31 +101,27 @@ class LoadTestSimulationCompoundTest extends LoadTestSimulation {
           rampUsers(10) during (5 seconds),
           rampUsers(30) during (5 seconds)
         )
-        .protocols(http.baseUrl(targetURI))
+        .protocols(http.baseUrl(getURI()))
     )
 }
 
-class LoadTestSimulationWithPreprocessingTest extends LoadTestSimulation {
+class LoadTestSimulationWithPreprocessing extends LoadTestSimulation {
   before {
-    if (BeforeAction.createUser()) {
-      println("check: OK")
-    } else {
-      println("check: NG")
-    }
+    println(s"check: ${BeforeAction.createUser()}")
   }
 
   private object BeforeAction {
     def createUser(): Boolean = {
-      val user = post(f"${targetURI}/users", "")
-      val values = get(f"${targetURI}/users/${user.get("id").get}")
-      println(s"user: ${user}")
-      println(s"values: ${values}")
+      val user = postRequest(s"${getURI()}/users", "")
+      val values = getRequest(s"${getURI()}/users/${user.get("id").get}")
+      println(f"user: $user")
+      println(f"values: $values")
       return user.get("id").get == values.get("id").get &&
         user.get("name").get == values.get("name").get &&
         user.get("secret_key").get == values.get("secret_key").get
     }
 
-    private def post(url: String, data: String): Map[String, Any] = {
+    private def postRequest(url: String, data: String): Map[String, Any] = {
       val response = Http(url)
         .postData(data)
         .header("content-type", "application/json")
@@ -131,7 +131,7 @@ class LoadTestSimulationWithPreprocessingTest extends LoadTestSimulation {
       return parse(response.body).extract[Map[String, Any]]
     }
 
-    private def get(url: String): Map[String, Any] = {
+    private def getRequest(url: String): Map[String, Any] = {
       val response = Http(url)
         .header("content-type", "application/json")
         .asString
@@ -140,4 +140,5 @@ class LoadTestSimulationWithPreprocessingTest extends LoadTestSimulation {
     }
   }
 
+  // setupはsuperの内容を利用
 }

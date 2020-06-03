@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -36,11 +37,20 @@ func (s *Server) referUser(w http.ResponseWriter, r *http.Request) {
 	user, err := s.UserService.Refer(domain.UserID(userID))
 	if err != nil {
 		log.Println("error reason: " + err.Error())
-		rendering.JSON(w, http.StatusInternalServerError, &responseError{
-			RequestID: requestID,
-			Reason:    "Failed UserService.Refer.",
-			Error:     err.Error(),
-		})
+		switch {
+		case err == sql.ErrNoRows:
+			rendering.JSON(w, http.StatusNotFound, &responseError{
+				RequestID: requestID,
+				Reason:    "User: " + userID + " is not found.",
+				Error:     nil,
+			})
+		default:
+			rendering.JSON(w, http.StatusInternalServerError, &responseError{
+				RequestID: requestID,
+				Reason:    "Failed UserService.Refer.",
+				Error:     err.Error(),
+			})
+		}
 		return
 	}
 	rendering.JSON(w, http.StatusOK, &userResponse{
