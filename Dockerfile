@@ -3,8 +3,10 @@
 FROM golang:1.12-alpine as build
 WORKDIR /go/load-test-sample
 COPY . .
-RUN apk add --no-cache git make  && \
-  go get github.com/oxequa/realize && \
+ENV GO111MODULE on
+RUN apk add --no-cache git make curl && \
+  curl -fLo /go/bin/air https://git.io/linux_air && \
+  chmod +x /go/bin/air && \
   make build
 
 # --- production ---

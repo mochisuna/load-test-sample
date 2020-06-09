@@ -11,3 +11,6 @@ cmd/api/api
 
 # node
 node_modules
+
+# tmp
+tmp/
