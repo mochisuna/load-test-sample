@@ -20,7 +20,7 @@ class LoadTestSimulation extends Simulation {
   }
 
   object User {
-    def create() = exec(
+    def create() =
       http("create_user")
         .post("/users")
         .check(
@@ -28,9 +28,8 @@ class LoadTestSimulation extends Simulation {
           jsonPath("$.id").find.saveAs("user_id"),
           jsonPath("$.name").find.saveAs("user_name")
         )
-    ).exitHereIfFailed
 
-    def refer(userID: String, userName: String) = exec(
+    def refer(userID: String, userName: String) =
       http("refer_user")
         .get(f"/users/$userID")
         .check(
@@ -38,8 +37,7 @@ class LoadTestSimulation extends Simulation {
           jsonPath("$.id").find.is(userID),
           jsonPath("$.name").find.is(userName),
           jsonPath("$.secret_key").find.saveAs("secret_key")
-        ),
-    ).exitHereIfFailed
+        )
   }
 
   object Page {
@@ -51,36 +49,48 @@ class LoadTestSimulation extends Simulation {
       }"""
     }
 
-    private def redirectRequest(requestTitle: String, param: String) = http(requestTitle)
-      .post("/display")
-      .body(StringBody(param))
-      .asJson
+    private def redirectRequest(requestTitle: String, param: String) =
+      http(requestTitle)
+        .post("/display")
+        .body(StringBody(param))
+        .asJson
 
-    def redirectStatus(userID: String, name: String, secretKey: String) = exec(
+    def redirectStatus(userID: String, name: String, secretKey: String) =
       redirectRequest("redirect_status", param(userID, name, secretKey))
         .disableFollowRedirect
         .check(status.is(301))
-    ).exitHereIfFailed
 
-    def redirectPage(userID: String, name: String, secretKey: String) = exec(
+
+    def redirectPage(userID: String, name: String, secretKey: String) =
       redirectRequest("redirect_page", param(userID, name, secretKey))
         .check(status.is(200))
-    ).exitHereIfFailed
+
   }
 
   def execScenario(name: String) = {
     scenario(name)
-      .exec(User.create())
-      .exec(User.refer("${user_id}", "${user_name}"))
-      .exec(Page.redirectStatus("${user_id}", "${user_name}", "${secret_key}"))
-      .exec(Page.redirectPage("${user_id}", "${user_name}", "${secret_key}"))
+      .exec(User.create()).exitHereIfFailed
+      .exec(User.refer("${user_id}", "${user_name}")).exitHereIfFailed
+      .exec(Page.redirectStatus("${user_id}", "${user_name}", "${secret_key}")).exitHereIfFailed
+      .exec(Page.redirectPage("${user_id}", "${user_name}", "${secret_key}")).exitHereIfFailed
   }
 
   setUp(
-    execScenario("Load test base simulation").inject(
-      atOnceUsers(1),
-    ).protocols(http.baseUrl(targetURI)),
+    execScenario("Load test base simulation")
+      .inject(atOnceUsers(1))
+      .protocols(http.baseUrl(targetURI)),
   )
+}
+
+class LoadTestSimulationWithDebug extends LoadTestSimulation {
+  override def execScenario(name: String) = {
+    super.execScenario(s"${name}-debug")
+      .exec(
+        session => {
+          println(s"user_id, user_name, secret_key = ${session("user_id").as[String]}, ${session("user_name").as[String]}, ${session("secret_key").as[String]}")
+          session
+        })
+  }
 }
 
 class LoadTestSimulationRampUp10Users extends LoadTestSimulation {
