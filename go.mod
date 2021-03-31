@@ -10,7 +10,7 @@ require (
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/leodido/go-urn v1.2.0 // indirect
-	github.com/rs/xid v1.2.1
+	github.com/rs/xid v1.3.0
 	github.com/unrolled/render v1.0.3
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
